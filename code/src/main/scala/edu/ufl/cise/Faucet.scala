@@ -51,8 +51,8 @@ object Faucet extends Logging {
 
   val text = "Abraham Lincoln was the 16th President of the United States, serving from March 1861 until his assassination in April 1865."
   val query = new SSFQuery("Abraham Lincoln", "president of")
-  Pipeline.init()
-  val pipeline = Pipeline.getPipeline(query)
+  //  Pipeline.init()
+  //  val pipeline = Pipeline.getPipeline(query)
 
   val SIMPLE_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -133,7 +133,28 @@ object Faucet extends Logging {
 
     transport.close()
 
-    arrayBuffer.toArray
+   // arrayBuffer.foreach(p => println(new String(p.body.cleansed.array, "UTF-8") + "\r\nmorteza"))
+    val arr: Array[StreamItem] = arrayBuffer.toArray
+    for(a <- arr){
+      val s = a.body.cleansed.array
+      println(s)
+    }
+    parallelProcess(arr)
+    arr
+  }
+
+  def parallelProcess(arr: Array[StreamItem]) {
+    
+    val rdd = SparkIntegrator.sc.parallelize(arr, SparkIntegrator.NUM_SLICES)
+    //all streamitems of one file in parallel
+
+    rdd.foreach(p => {
+//      val str = new String(p.body.cleansed.array, "UTF-8")
+//      logInfo("Call pipeline from Faucet.")
+//      logInfo(str)
+      //pipeline.run(str, SparkIntegrator.sc)
+    })
+
   }
 
   def getDirectoryName(date: String, hour: Int): String = {
@@ -156,14 +177,10 @@ object Faucet extends Logging {
     //previous file is processed.
 
     val dayHourFileList = pattern.findAllIn(html).matchData.toArray
-    Pipeline.init()
-    for (fileName <- dayHourFileList) {
-      val arr = getStreams(directoryName, fileName.group(1))
-      val rdd = SparkIntegrator.sc.parallelize(arr, SparkIntegrator.NUM_SLICES)
-      //all streamitems of one file in parallel
 
-      rdd.foreach(p =>
-        pipeline.run(new String(p.body.cleansed.array, "UTF-8"), SparkIntegrator.sc))
+    for (fileName <- dayHourFileList) {
+      println(fileName.group(1))
+      val arr = getStreams(directoryName, fileName.group(1))
     }
 
     null
@@ -229,7 +246,7 @@ object Faucet extends Logging {
   def main(args: Array[String]) = {
 
     //logInfo("""Running test with GetStreams("2012-05-02-00", "news.f451b42043f1f387a36083ad0b089bfd.xz.gpg")""")
-    //    val z = getStreams("2012-05-02-00", "news.f451b42043f1f387a36083ad0b089bfd.xz.gpg")
+       val z = getStreams("2012-05-02-00", "news.f451b42043f1f387a36083ad0b089bfd.xz.gpg")
     //    val si = z.next.get
     //    logInfo("The first StreamItem is: %s ".format(si.toString))
     //    logInfo("Length of stream is: %d".format(z.length))
@@ -244,7 +261,7 @@ object Faucet extends Logging {
     //    logInfo(z3.take(501).length.toString)
     //println(getAllDataSize(MAX_FROM_DATE, MAX_FROM_HOUR, MAX_TO_DATE, MAX_TO_HOUR))
 
-    val z3 = getStreams("2011-10-08", 5)
+    //val z3 = getStreams("2011-10-08", 5)
     //   logInfo(z3.take(501).length.toString)
   }
 
