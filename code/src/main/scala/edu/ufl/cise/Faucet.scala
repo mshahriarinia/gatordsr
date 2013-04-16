@@ -51,8 +51,8 @@ object Faucet extends Logging {
 
   val text = "Abraham Lincoln was the 16th President of the United States, serving from March 1861 until his assassination in April 1865."
   val query = new SSFQuery("Abraham Lincoln", "president of")
-  //  Pipeline.init()
-  //  val pipeline = Pipeline.getPipeline(query)
+  Pipeline.init()
+  val pipeline = Pipeline.getPipeline(query)
 
   val SIMPLE_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -113,10 +113,10 @@ object Faucet extends Logging {
     val protocol = new TBinaryProtocol(transport)
 
     val arrayBuffer = ArrayBuffer[StreamItem]()
-    val si = new StreamItem
+
     var exception = false
     while (!exception) {
-
+      val si = new StreamItem
       try {
         si.read(protocol);
       } catch {
@@ -133,26 +133,40 @@ object Faucet extends Logging {
 
     transport.close()
 
-   // arrayBuffer.foreach(p => println(new String(p.body.cleansed.array, "UTF-8") + "\r\nmorteza"))
     val arr: Array[StreamItem] = arrayBuffer.toArray
-    for(a <- arr){
-      val s = a.body.cleansed.array
-      println(s)
-    }
     parallelProcess(arr)
     arr
   }
 
   def parallelProcess(arr: Array[StreamItem]) {
-    
+    //    try {
+    //      for (a <- arr) {
+    //        println(new String(a.body.raw.array(), "UTF-8"))
+    //        val s = new String(a.body.cleansed.array(), "UTF-8")
+    //
+    //        println(s)
+    //      }
+    //    } catch {
+    //      case e: Exception =>
+    //        logDebug("Error in mkStreamItem")
+    //        exception = true
+    //    }
+
     val rdd = SparkIntegrator.sc.parallelize(arr, SparkIntegrator.NUM_SLICES)
+
     //all streamitems of one file in parallel
 
     rdd.foreach(p => {
-//      val str = new String(p.body.cleansed.array, "UTF-8")
-//      logInfo("Call pipeline from Faucet.")
-//      logInfo(str)
-      //pipeline.run(str, SparkIntegrator.sc)
+      try {
+        val str = new String(p.body.cleansed.array, "UTF-8")
+        logInfo("Call pipeline from Faucet.")
+        logInfo(str)
+        pipeline.run(str, SparkIntegrator.sc)
+      } catch {
+        case e: Exception =>
+          logDebug("Error in mkStreamItem")
+      }
+
     })
 
   }
@@ -246,7 +260,7 @@ object Faucet extends Logging {
   def main(args: Array[String]) = {
 
     //logInfo("""Running test with GetStreams("2012-05-02-00", "news.f451b42043f1f387a36083ad0b089bfd.xz.gpg")""")
-       val z = getStreams("2012-05-02-00", "news.f451b42043f1f387a36083ad0b089bfd.xz.gpg")
+    //    val z = getStreams("2012-05-02-00", "news.f451b42043f1f387a36083ad0b089bfd.xz.gpg")
     //    val si = z.next.get
     //    logInfo("The first StreamItem is: %s ".format(si.toString))
     //    logInfo("Length of stream is: %d".format(z.length))
@@ -263,6 +277,8 @@ object Faucet extends Logging {
 
     //val z3 = getStreams("2011-10-08", 5)
     //   logInfo(z3.take(501).length.toString)
+
+    val z = getStreams("2011-10-18-16", "social.bf61a19cfd849e0c74f84f5c6c5a3430.xz.gpg")
   }
 
   /**
