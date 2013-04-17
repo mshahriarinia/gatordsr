@@ -153,15 +153,18 @@ object Faucet extends Logging {
     //    }
 
     val rdd = SparkIntegrator.sc.parallelize(arr, SparkIntegrator.NUM_SLICES)
+   val perRDD = rdd.flatMap(p => new String(p.body.cleansed.array, "UTF-8")).persist(spark.storage.StorageLevel.MEMORY_AND_DISK_SER)
+   perRDD.flatMap(p => p+"  ")
+   perRDD.foreach(p => pipeline.run(p))
 
     //all streamitems of one file in parallel
 
     rdd.foreach(p => {
       try {
-        val str = new String(p.body.cleansed.array, "UTF-8")
+       // val str = new String(p.body.cleansed.array, "UTF-8")
         logInfo("Call pipeline from Faucet.")
-        logInfo(str)
-        pipeline.run(str, SparkIntegrator.sc)
+       // logInfo(str)
+        pipeline.run(p)
       } catch {
         case e: Exception =>
           logDebug("Error in mkStreamItem")

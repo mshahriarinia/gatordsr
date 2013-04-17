@@ -51,7 +51,7 @@ object Pipeline extends Logging {
       "Abraham Lincoln was the 16th President of the United States, serving from March 1861 until his assassination in April 1865."
     val pipeline = getPipeline(new SSFQuery("Abraham Lincoln", "president of"))
 
-    pipeline.run(text, SparkIntegrator.sc)
+    pipeline.run(text)
     // check how to push
   }
 
@@ -183,7 +183,7 @@ class Pipeline(query: SSFQuery) extends Logging {
   }
 
   // the main logic
-  def run(text: String, sparkContext: SparkContext): ArrayList[Triple] =
+  def run(text: String): ArrayList[Triple] =
     {
       // create an empty Annotation just with the given text
       val document = new Annotation(text)
