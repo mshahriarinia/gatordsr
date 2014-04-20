@@ -39,11 +39,12 @@ public class Parser {
 		StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
 
 		// read some text in the text variable
-
-		List<String> lines = Files.readAllLines(Paths.get(file.getAbsolutePath()),StandardCharsets.UTF_8);
+		BufferedReader br=new BufferedReader(new FileReader(file));
+		String line;
 		StringBuilder textTemp=new StringBuilder();
-		for(String line:lines)
+		while((line=br.readLine())!=null)
 			textTemp.append(line);
+		br.close();
 		String text = textTemp.toString();
 
 
