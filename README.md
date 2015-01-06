@@ -16,3 +16,5 @@ http://trec-kba.org/KBA-2013-overview-2013-11-20.pdf
 BIT's paper: http://trec.nist.gov/pubs/trec22/papers/BIT-MSRA-kba.pdf
 
 Detailed scores https://github.com/trec-kba/kba-scorer/blob/master/overviews/ccr-all-entities-vital%2Buseful-require-positives-cutoff-step-size-1-run-overview.csv
+
+All proceedings: http://trec.nist.gov/pubs/trec22/trec2013.html
